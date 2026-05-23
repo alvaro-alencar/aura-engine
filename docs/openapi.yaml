@@ -1,0 +1,178 @@
+openapi: 3.1.0
+info:
+  title: Aura Engine API
+  version: 0.1.0
+  description: |
+    Responsive ambience engine API.
+
+    Original concept by Álvaro Alencar.
+    Use freely. Cite the origin.
+servers:
+  - url: http://localhost:8787
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  protocol:
+                    type: string
+                    const: aura.v1
+  /state:
+    get:
+      summary: Get current Aura state
+      responses:
+        '200':
+          description: Current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuraState'
+  /decide:
+    post:
+      summary: Decide ambience without mutating current state
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuraSignal'
+      responses:
+        '200':
+          description: Ambience decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmbienceDecision'
+  /update:
+    post:
+      summary: Update state and return ambience decision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuraSignal'
+      responses:
+        '200':
+          description: Updated state and decision
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [state, decision]
+                properties:
+                  state:
+                    $ref: '#/components/schemas/AuraState'
+                  decision:
+                    $ref: '#/components/schemas/AmbienceDecision'
+  /reset:
+    post:
+      summary: Reset state
+      responses:
+        '200':
+          description: Reset result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  state:
+                    $ref: '#/components/schemas/AuraState'
+components:
+  schemas:
+    AuraSignal:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/ConversationMode'
+        topic:
+          type: string
+        emotionalTone:
+          $ref: '#/components/schemas/EmotionalTone'
+        intensity:
+          type: number
+          minimum: 0
+          maximum: 1
+        silenceDurationMs:
+          type: number
+          minimum: 0
+        userTypingSpeed:
+          $ref: '#/components/schemas/TypingSpeed'
+        agentName:
+          type: string
+        timestamp:
+          type: number
+        metadata:
+          type: object
+          additionalProperties: true
+    AuraState:
+      type: object
+      required: [mode, topic, emotionalTone, intensity, silenceDurationMs, userTypingSpeed, agentName, updatedAt, metadata]
+      properties:
+        mode:
+          $ref: '#/components/schemas/ConversationMode'
+        topic:
+          type: string
+        emotionalTone:
+          $ref: '#/components/schemas/EmotionalTone'
+        intensity:
+          type: number
+        silenceDurationMs:
+          type: number
+        userTypingSpeed:
+          $ref: '#/components/schemas/TypingSpeed'
+        agentName:
+          type: string
+        updatedAt:
+          type: number
+        metadata:
+          type: object
+          additionalProperties: true
+    AmbienceDecision:
+      type: object
+      required: [protocol, soundscape, volume, baseFrequency, modulationRate, textureAmount, pulseAmount, transitionMs, explanation]
+      properties:
+        protocol:
+          type: string
+          const: aura.v1
+        soundscape:
+          $ref: '#/components/schemas/SoundscapeId'
+        volume:
+          type: number
+          minimum: 0
+          maximum: 1
+        baseFrequency:
+          type: number
+        modulationRate:
+          type: number
+        textureAmount:
+          type: number
+        pulseAmount:
+          type: number
+        transitionMs:
+          type: number
+        explanation:
+          type: string
+    ConversationMode:
+      type: string
+      enum: [text_conversation, voice_conversation, coding_session, study_session, creative_session, meditation, unknown]
+    EmotionalTone:
+      type: string
+      enum: [neutral, lonely_reflective, focused, curious, excited, tense, sad, calm, playful, mystical]
+    TypingSpeed:
+      type: string
+      enum: [idle, slow, medium, fast]
+    SoundscapeId:
+      type: string
+      enum: [quiet_presence, deep_room_low_warm_drone, soft_focus_current, curiosity_particles, creative_sparks, tension_shadow_pulse, calm_breathing_field, mystic_resonator, playful_glass_motes]
