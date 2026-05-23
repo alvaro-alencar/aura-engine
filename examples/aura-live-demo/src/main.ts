@@ -1,12 +1,20 @@
-import { createAmbienceAgent, type AmbienceContextInput } from "../../../packages/ai/src";
-import { createAuraEngine, type ConversationMode, type TypingSpeed } from "../../../packages/core/src";
+import { createAmbienceAgent, type AmbienceContextInput, type AmbienceAgentResult } from "../../../packages/ai/src";
+import { createAuraEngine, type AmbienceDecision, type ConversationMode, type TypingSpeed } from "../../../packages/core/src";
 import { createAuraAudioLayer } from "../../../packages/web/src/audio-layer";
 
 const aura = createAuraEngine();
-const agent = createAmbienceAgent();
+const localAgent = createAmbienceAgent();
 const audio = createAuraAudioLayer();
 
+const API_BASE_URL = "http://localhost:8787";
+
+interface InferenceResponse extends AmbienceAgentResult {
+  decision: AmbienceDecision;
+  provider?: "local-rules" | "openrouter";
+}
+
 const contextInput = document.querySelector<HTMLTextAreaElement>("#context");
+const engineInput = document.querySelector<HTMLSelectElement>("#engine");
 const silenceInput = document.querySelector<HTMLInputElement>("#silence");
 const silenceLabel = document.querySelector<HTMLSpanElement>("#silenceLabel");
 const typingSpeedInput = document.querySelector<HTMLSelectElement>("#typingSpeed");
@@ -26,34 +34,35 @@ const confidence = document.querySelector<HTMLElement>("#confidence");
 
 let audioStarted = false;
 let sampleIndex = 0;
+let requestCounter = 0;
 
 const samples = [
   {
-    text: "I am writing to an AI with headphones on. The room is silent. I want to feel that something intelligent is present here with me.",
+    text: "Estou escrevendo para uma IA com fone no ouvido. O ambiente está silencioso. Quero sentir que existe algo inteligente presente aqui comigo.",
     silence: 9000,
     speed: "slow",
     mode: "text_conversation"
   },
   {
-    text: "I need to debug this TypeScript server and understand why the API route is broken. Keep me focused.",
+    text: "Preciso debugar este servidor TypeScript e entender por que a rota da API quebrou. Quero foco, não desespero.",
     silence: 1800,
     speed: "fast",
     mode: "coding_session"
   },
   {
-    text: "Explain this idea like I am studying deeply. I want clarity, patience and a soft current of concentration.",
+    text: "Explique essa ideia como se eu estivesse estudando profundamente. Quero clareza, paciência e concentração suave.",
     silence: 2500,
     speed: "medium",
     mode: "study_session"
   },
   {
-    text: "What if an AI interface had an atmosphere, a symbolic room, a small cosmic weather around thought?",
+    text: "E se uma interface de IA tivesse atmosfera própria, uma sala simbólica, um pequeno clima cósmico ao redor do pensamento?",
     silence: 6000,
     speed: "slow",
     mode: "creative_session"
   },
   {
-    text: "There is an urgent error in production and I need awareness without panic. Something is wrong but we can solve it.",
+    text: "Existe um erro urgente em produção. Preciso de atenção máxima, mas sem pânico. Algo está errado, mas podemos resolver.",
     silence: 500,
     speed: "fast",
     mode: "coding_session"
@@ -68,23 +77,60 @@ function readContext(): AmbienceContextInput {
     mode: (modeInput?.value ?? "text_conversation") as ConversationMode,
     agentName: "AuraLiveDemo",
     metadata: {
-      source: "aura-live-demo"
+      source: "aura-live-demo",
+      language: "pt-BR"
     }
   };
 }
 
-function inferAndApply() {
-  const result = agent.inferSignal(readContext());
-  const decision = aura.update(result.signal);
+async function inferAndApply() {
+  const currentRequest = requestCounter + 1;
+  requestCounter = currentRequest;
 
-  if (audioStarted) {
-    audio.apply(decision);
+  setLoading(true);
+
+  try {
+    const result = await inferWithSelectedEngine(readContext());
+
+    if (currentRequest !== requestCounter) return;
+
+    const decision = aura.update(result.signal);
+    const finalDecision = result.decision ?? decision;
+
+    if (audioStarted) {
+      audio.apply(finalDecision);
+    }
+
+    updateUi(result.confidence, result.reasons, finalDecision, result.provider ?? selectedEngineLabel());
+  } catch (error) {
+    showError(error);
+  } finally {
+    setLoading(false);
   }
-
-  updateUi(result.confidence, result.reasons, decision);
 }
 
-function updateUi(agentConfidence: number, reasons: string[], decision = aura.decide(readContext())) {
+async function inferWithSelectedEngine(context: AmbienceContextInput): Promise<InferenceResponse> {
+  if (engineInput?.value === "openrouter") {
+    const response = await fetch(`${API_BASE_URL}/llm-infer`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(context)
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null) as { message?: string } | null;
+      throw new Error(payload?.message ?? `Falha ao chamar OpenRouter pelo servidor local: ${response.status}`);
+    }
+
+    return await response.json() as InferenceResponse;
+  }
+
+  const result = localAgent.inferSignal(context);
+  const decision = aura.decide(result.signal);
+  return { ...result, decision, provider: "local-rules" };
+}
+
+function updateUi(agentConfidence: number, reasons: string[], decision: AmbienceDecision, provider: string) {
   if (soundscapeName) soundscapeName.textContent = decision.soundscapeMeta?.name ?? decision.soundscape;
   if (soundscapeDescription) soundscapeDescription.textContent = decision.soundscapeMeta?.description ?? decision.explanation;
   if (tone) tone.textContent = aura.getState().emotionalTone;
@@ -95,17 +141,37 @@ function updateUi(agentConfidence: number, reasons: string[], decision = aura.de
   if (output) {
     output.textContent = JSON.stringify(
       {
-        agent: {
-          confidence: agentConfidence,
-          reasons
+        motor: provider,
+        agente: {
+          confianca: agentConfidence,
+          motivos: reasons
         },
-        state: aura.getState(),
-        decision
+        estado: aura.getState(),
+        decisao: decision
       },
       null,
       2
     );
   }
+}
+
+function showError(error: unknown) {
+  const message = error instanceof Error ? error.message : "Erro desconhecido.";
+  if (soundscapeName) soundscapeName.textContent = "Erro na inferência";
+  if (soundscapeDescription) soundscapeDescription.textContent = message;
+  if (output) {
+    output.textContent = JSON.stringify({ erro: message }, null, 2);
+  }
+}
+
+function setLoading(isLoading: boolean) {
+  if (!inferButton) return;
+  inferButton.disabled = isLoading;
+  inferButton.textContent = isLoading ? "Inferindo..." : "Inferir e aplicar";
+}
+
+function selectedEngineLabel() {
+  return engineInput?.value === "openrouter" ? "openrouter" : "local-rules";
 }
 
 function updateSilenceLabel() {
@@ -116,10 +182,12 @@ function updateSilenceLabel() {
 startButton?.addEventListener("click", async () => {
   await audio.start();
   audioStarted = true;
-  inferAndApply();
+  await inferAndApply();
 });
 
-inferButton?.addEventListener("click", inferAndApply);
+inferButton?.addEventListener("click", () => {
+  void inferAndApply();
+});
 
 stopButton?.addEventListener("click", () => {
   audio.stop();
@@ -136,22 +204,23 @@ cycleButton?.addEventListener("click", () => {
   if (modeInput) modeInput.value = sample.mode;
 
   updateSilenceLabel();
-  inferAndApply();
+  void inferAndApply();
 });
 
 contextInput?.addEventListener("input", () => {
   window.clearTimeout(Number(contextInput.dataset.timer ?? 0));
-  const timer = window.setTimeout(inferAndApply, 420);
+  const timer = window.setTimeout(() => void inferAndApply(), 650);
   contextInput.dataset.timer = String(timer);
 });
 
 silenceInput?.addEventListener("input", () => {
   updateSilenceLabel();
-  inferAndApply();
+  void inferAndApply();
 });
 
-typingSpeedInput?.addEventListener("change", inferAndApply);
-modeInput?.addEventListener("change", inferAndApply);
+typingSpeedInput?.addEventListener("change", () => void inferAndApply());
+modeInput?.addEventListener("change", () => void inferAndApply());
+engineInput?.addEventListener("change", () => void inferAndApply());
 
 updateSilenceLabel();
-inferAndApply();
+void inferAndApply();
