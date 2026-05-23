@@ -1,3 +1,4 @@
+import type { AmbienceAgentResult, AmbienceContextInput } from "../../ai/src";
 import type { AmbienceDecision, AuraSignal, AuraState } from "../../core/src";
 
 export interface AuraHttpClientOptions {
@@ -11,10 +12,20 @@ export interface AuraUpdateResponse {
   decision: AmbienceDecision;
 }
 
+export interface AuraInferResponse extends AmbienceAgentResult {
+  decision: AmbienceDecision;
+}
+
+export interface AuraInferUpdateResponse extends AmbienceAgentResult {
+  state: AuraState;
+  decision: AmbienceDecision;
+}
+
 export interface AuraHealthResponse {
   ok: boolean;
   protocol: "aura.v1";
   streaming?: boolean;
+  inference?: boolean;
 }
 
 export type AuraStreamEventType = "aura.update" | "aura.reset" | "aura.heartbeat";
@@ -53,6 +64,20 @@ export class AuraHttpClient {
 
   async state(): Promise<AuraState> {
     return this.request<AuraState>("/state", { method: "GET" });
+  }
+
+  async infer(context: AmbienceContextInput): Promise<AuraInferResponse> {
+    return this.request<AuraInferResponse>("/infer", {
+      method: "POST",
+      body: JSON.stringify(context)
+    });
+  }
+
+  async inferUpdate(context: AmbienceContextInput): Promise<AuraInferUpdateResponse> {
+    return this.request<AuraInferUpdateResponse>("/infer-update", {
+      method: "POST",
+      body: JSON.stringify(context)
+    });
   }
 
   async decide(signal: AuraSignal): Promise<AmbienceDecision> {
