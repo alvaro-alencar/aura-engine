@@ -1,5 +1,5 @@
 import type { AmbienceAgentResult, AmbienceContextInput } from "../../ai/src";
-import type { AmbienceDecision, AuraSignal, AuraState } from "../../core/src";
+import type { AmbienceDecision, AuraSignal, AuraState, SoundscapeId, SoundscapePreset } from "../../core/src";
 
 export interface AuraHttpClientOptions {
   baseUrl?: string;
@@ -26,6 +26,7 @@ export interface AuraHealthResponse {
   protocol: "aura.v1";
   streaming?: boolean;
   inference?: boolean;
+  soundscapeRegistry?: boolean;
 }
 
 export type AuraStreamEventType = "aura.update" | "aura.reset" | "aura.heartbeat";
@@ -64,6 +65,15 @@ export class AuraHttpClient {
 
   async state(): Promise<AuraState> {
     return this.request<AuraState>("/state", { method: "GET" });
+  }
+
+  async soundscapes(tag?: string): Promise<SoundscapePreset[]> {
+    const query = tag ? `?tag=${encodeURIComponent(tag)}` : "";
+    return this.request<SoundscapePreset[]>(`/soundscapes${query}`, { method: "GET" });
+  }
+
+  async soundscape(id: SoundscapeId): Promise<SoundscapePreset> {
+    return this.request<SoundscapePreset>(`/soundscapes/${encodeURIComponent(id)}`, { method: "GET" });
   }
 
   async infer(context: AmbienceContextInput): Promise<AuraInferResponse> {
