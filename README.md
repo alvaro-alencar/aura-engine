@@ -43,6 +43,17 @@ The first version does not try to generate complex music from scratch. It starts
 3. render a lightweight procedural soundscape in the browser;
 4. expose a clean API that can later be connected to a dedicated ambience AI.
 
+## Try the integrated live demo
+
+```bash
+npm install
+npm run dev:live
+```
+
+Then open the local URL shown by Vite.
+
+The live demo lets you write a conversational state, infer ambience with Aura Agent and hear the Web Audio renderer react in real time.
+
 ## Use it in five ways
 
 ### 1. Browser demo
@@ -236,6 +247,9 @@ aura-engine/
       src/
         audio-layer.ts
   examples/
+    aura-live-demo/
+      index.html
+      src/main.ts
     browser-demo/
       index.html
       src/main.ts
