@@ -43,7 +43,9 @@ The first version does not try to generate complex music from scratch. It starts
 3. render a lightweight procedural soundscape in the browser;
 4. expose a clean API that can later be connected to a dedicated ambience AI.
 
-## Quick start
+## Use it in three ways
+
+### 1. Browser demo
 
 ```bash
 npm install
@@ -52,7 +54,48 @@ npm run dev
 
 Then open the local URL shown by Vite.
 
-## Basic usage
+### 2. HTTP sidecar for any language
+
+```bash
+npm install
+npm run server
+```
+
+Then call:
+
+```txt
+POST http://localhost:8787/decide
+```
+
+Example:
+
+```bash
+curl -X POST http://localhost:8787/decide \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mode": "study_session",
+    "topic": "medical tutoring",
+    "emotionalTone": "focused",
+    "intensity": 0.64,
+    "silenceDurationMs": 4200,
+    "userTypingSpeed": "medium",
+    "agentName": "Tutoria"
+  }'
+```
+
+### 3. Docker sidecar
+
+```bash
+docker compose up --build
+```
+
+The service will be available at:
+
+```txt
+http://localhost:8787
+```
+
+## Basic library usage
 
 ```ts
 import { createAuraEngine } from "./packages/core/src";
@@ -71,6 +114,34 @@ const decision = aura.update({
 console.log(decision);
 ```
 
+## HTTP client usage
+
+```ts
+import { createAuraHttpClient } from "./packages/client/src";
+
+const aura = createAuraHttpClient({ baseUrl: "http://localhost:8787" });
+
+const decision = await aura.decide({
+  mode: "text_conversation",
+  topic: "onboarding",
+  emotionalTone: "curious",
+  intensity: 0.48
+});
+
+console.log(decision);
+```
+
+## Protocol
+
+Aura Engine speaks JSON over HTTP.
+
+See:
+
+- `docs/protocol.md`
+- `docs/openapi.yaml`
+- `docs/integration-guide.md`
+- `docs/sidecar.md`
+
 ## Repository structure
 
 ```txt
@@ -78,7 +149,10 @@ aura-engine/
   docs/
     manifesto.md
     architecture.md
-    ambience-taxonomy.md
+    protocol.md
+    openapi.yaml
+    integration-guide.md
+    sidecar.md
   packages/
     core/
       src/
@@ -86,24 +160,41 @@ aura-engine/
         ambience-state.ts
         mood-mapper.ts
         index.ts
+    client/
+      src/
+        aura-http-client.ts
+        index.ts
+    server/
+      src/
+        server.ts
     web/
       src/
         audio-layer.ts
-    ai/
-      src/
-        ambience-agent.ts
-        prompt.ts
   examples/
     browser-demo/
       index.html
       src/main.ts
+    http-client/
+      README.md
 ```
+
+## Design laws
+
+Aura must be subtle.
+
+If it competes with thought, it failed.
+
+If it manipulates emotion aggressively, it failed.
+
+If it becomes generic music, it failed.
+
+Aura should behave like the weather of an intelligent room.
 
 ## Status
 
 Experimental seed version.
 
-This is the first skeleton: a working symbolic and procedural foundation for responsive ambience. The next step is connecting an actual LLM-based ambience agent and expanding the sound palette.
+This is the first skeleton: a working symbolic and procedural foundation for responsive ambience. The next step is connecting an actual LLM-based ambience agent, adding WebSocket streaming and expanding the sound palette.
 
 ## Citation
 
