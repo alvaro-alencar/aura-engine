@@ -1,3 +1,5 @@
+import type { SoundscapeEnergy, SoundscapeRenderStrategy, SoundscapeTexture } from "./soundscape-registry";
+
 export type ConversationMode =
   | "text_conversation"
   | "voice_conversation"
@@ -56,9 +58,19 @@ export type SoundscapeId =
   | "mystic_resonator"
   | "playful_glass_motes";
 
+export interface AmbienceDecisionSoundscapeMetadata {
+  name: string;
+  description: string;
+  energy: SoundscapeEnergy;
+  textures: SoundscapeTexture[];
+  renderStrategy: SoundscapeRenderStrategy;
+  tags: string[];
+}
+
 export interface AmbienceDecision {
   protocol: "aura.v1";
   soundscape: SoundscapeId;
+  soundscapeMeta?: AmbienceDecisionSoundscapeMetadata;
   volume: number;
   baseFrequency: number;
   modulationRate: number;
