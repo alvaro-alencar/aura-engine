@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite examples/browser-demo --host 0.0.0.0",
+    "server": "tsx packages/server/src/server.ts",
     "build": "tsc --noEmit && vite build examples/browser-demo --outDir ../../dist/browser-demo",
     "typecheck": "tsc --noEmit"
   },
@@ -22,6 +23,7 @@
   ],
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "latest",
+    "tsx": "latest",
     "typescript": "latest",
     "vite": "latest"
   }
