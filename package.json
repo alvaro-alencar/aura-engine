@@ -1,0 +1,28 @@
+{
+  "name": "aura-engine",
+  "version": "0.1.0",
+  "description": "Responsive ambience engine powered by AI. A real-time sensory layer for text, voice and agentic interfaces.",
+  "type": "module",
+  "private": false,
+  "author": "Álvaro Alencar",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite examples/browser-demo --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build examples/browser-demo --outDir ../../dist/browser-demo",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "ambience",
+    "audio",
+    "soundscape",
+    "web-audio",
+    "agentic-interfaces",
+    "responsive-ui"
+  ],
+  "devDependencies": {
+    "@vitejs/plugin-basic-ssl": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}
