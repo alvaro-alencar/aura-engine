@@ -43,7 +43,7 @@ The first version does not try to generate complex music from scratch. It starts
 3. render a lightweight procedural soundscape in the browser;
 4. expose a clean API that can later be connected to a dedicated ambience AI.
 
-## Use it in four ways
+## Use it in five ways
 
 ### 1. Browser demo
 
@@ -126,6 +126,31 @@ const subscription = aura.subscribe({
 });
 ```
 
+### 5. Ambience Agent inference
+
+Aura Engine can infer symbolic ambience signals from interaction context:
+
+```txt
+POST http://localhost:8787/infer
+POST http://localhost:8787/infer-update
+```
+
+Example:
+
+```bash
+curl -X POST http://localhost:8787/infer-update \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "I feel alone writing to this AI in silence, but I want to keep thinking.",
+    "silenceDurationMs": 9000,
+    "userTypingSpeed": "slow",
+    "agentName": "AuraAgent"
+  }'
+```
+
+`/infer` returns signal and decision without mutating state.  
+`/infer-update` infers, updates Aura state and broadcasts `aura.update` to SSE clients.
+
 ## Basic library usage
 
 ```ts
@@ -170,6 +195,7 @@ See:
 
 - `docs/protocol.md`
 - `docs/openapi.yaml`
+- `docs/ambience-agent.md`
 - `docs/streaming.md`
 - `docs/integration-guide.md`
 - `docs/sidecar.md`
@@ -183,10 +209,16 @@ aura-engine/
     architecture.md
     protocol.md
     openapi.yaml
+    ambience-agent.md
     streaming.md
     integration-guide.md
     sidecar.md
   packages/
+    ai/
+      src/
+        ambience-agent.ts
+        prompt.ts
+        index.ts
     core/
       src/
         ambience-engine.ts
@@ -229,7 +261,7 @@ Aura should behave like the weather of an intelligent room.
 
 Experimental seed version.
 
-This is the first skeleton: a working symbolic and procedural foundation for responsive ambience. The next step is connecting an actual LLM-based ambience agent, adding richer renderers and expanding the sound palette.
+This is the first skeleton: a working symbolic and procedural foundation for responsive ambience. The next step is connecting optional LLM providers, adding richer renderers and expanding the sound palette.
 
 ## Citation
 
