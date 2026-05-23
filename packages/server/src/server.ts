@@ -98,7 +98,7 @@ function getQueryParam(req: IncomingMessage, name: string): string | null {
   return url.searchParams.get(name);
 }
 
-const server = createServer(async (req, res) => {
+const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
   try {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
 
@@ -214,7 +214,7 @@ setInterval(() => {
     state: aura.getState(),
     timestamp: Date.now()
   });
-}, 30000).unref();
+}, 30000);
 
 server.listen(port, () => {
   console.log(`Aura Engine HTTP adapter listening on http://localhost:${port}`);
