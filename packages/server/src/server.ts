@@ -1,6 +1,15 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createAmbienceAgent, type AmbienceContextInput } from "../../ai/src";
-import { createAuraEngine, type AmbienceDecision, type AuraSignal, type AuraState } from "../../core/src";
+import {
+  createAuraEngine,
+  findSoundscapesByTag,
+  getSoundscapePreset,
+  listSoundscapePresets,
+  type AmbienceDecision,
+  type AuraSignal,
+  type AuraState,
+  type SoundscapeId
+} from "../../core/src";
 
 const aura = createAuraEngine();
 const ambienceAgent = createAmbienceAgent();
@@ -84,29 +93,55 @@ function updateAndBroadcast(signal: AuraSignal) {
   return { state: aura.getState(), decision };
 }
 
+function getQueryParam(req: IncomingMessage, name: string): string | null {
+  const url = new URL(req.url ?? "/", "http://localhost");
+  return url.searchParams.get(name);
+}
+
 const server = createServer(async (req, res) => {
   try {
+    const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+
     if (req.method === "OPTIONS") {
       sendJson(res, 204, {});
       return;
     }
 
-    if (req.method === "GET" && req.url === "/health") {
-      sendJson(res, 200, { ok: true, protocol: "aura.v1", streaming: true, inference: true });
+    if (req.method === "GET" && pathname === "/health") {
+      sendJson(res, 200, { ok: true, protocol: "aura.v1", streaming: true, inference: true, soundscapeRegistry: true });
       return;
     }
 
-    if (req.method === "GET" && req.url === "/state") {
+    if (req.method === "GET" && pathname === "/state") {
       sendJson(res, 200, aura.getState());
       return;
     }
 
-    if (req.method === "GET" && req.url === "/events") {
+    if (req.method === "GET" && pathname === "/soundscapes") {
+      const tag = getQueryParam(req, "tag");
+      sendJson(res, 200, tag ? findSoundscapesByTag(tag) : listSoundscapePresets());
+      return;
+    }
+
+    if (req.method === "GET" && pathname.startsWith("/soundscapes/")) {
+      const id = decodeURIComponent(pathname.replace("/soundscapes/", "")) as SoundscapeId;
+      const preset = getSoundscapePreset(id);
+
+      if (!preset) {
+        sendJson(res, 404, { error: "soundscape_not_found", id });
+        return;
+      }
+
+      sendJson(res, 200, preset);
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/events") {
       openEventStream(req, res);
       return;
     }
 
-    if (req.method === "POST" && req.url === "/infer") {
+    if (req.method === "POST" && pathname === "/infer") {
       const context = (await readJson(req)) as AmbienceContextInput;
       const result = ambienceAgent.inferSignal(context);
       const decision = aura.decide(result.signal);
@@ -114,7 +149,7 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "POST" && req.url === "/infer-update") {
+    if (req.method === "POST" && pathname === "/infer-update") {
       const context = (await readJson(req)) as AmbienceContextInput;
       const result = ambienceAgent.inferSignal(context);
       const update = updateAndBroadcast(result.signal);
@@ -122,19 +157,19 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "POST" && req.url === "/decide") {
+    if (req.method === "POST" && pathname === "/decide") {
       const signal = (await readJson(req)) as AuraSignal;
       sendJson(res, 200, aura.decide(signal));
       return;
     }
 
-    if (req.method === "POST" && req.url === "/update") {
+    if (req.method === "POST" && pathname === "/update") {
       const signal = (await readJson(req)) as AuraSignal;
       sendJson(res, 200, updateAndBroadcast(signal));
       return;
     }
 
-    if (req.method === "POST" && req.url === "/reset") {
+    if (req.method === "POST" && pathname === "/reset") {
       aura.reset();
       const event: AuraUpdateEvent = {
         protocol: "aura.v1",
@@ -153,6 +188,9 @@ const server = createServer(async (req, res) => {
       availableRoutes: [
         "GET /health",
         "GET /state",
+        "GET /soundscapes",
+        "GET /soundscapes?tag=focus",
+        "GET /soundscapes/:id",
         "GET /events",
         "POST /infer",
         "POST /infer-update",
