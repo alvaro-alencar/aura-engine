@@ -1,5 +1,6 @@
+import "dotenv/config";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { createAmbienceAgent, type AmbienceContextInput } from "../../ai/src";
+import { createAmbienceAgent, createOpenRouterAmbienceAgent, type AmbienceContextInput } from "../../ai/src";
 import {
   createAuraEngine,
   findSoundscapesByTag,
@@ -13,6 +14,14 @@ import {
 
 const aura = createAuraEngine();
 const ambienceAgent = createAmbienceAgent();
+const openRouterAgent = process.env.OPENROUTER_API_KEY
+  ? createOpenRouterAmbienceAgent({
+      apiKey: process.env.OPENROUTER_API_KEY,
+      model: process.env.OPENROUTER_MODEL,
+      siteUrl: process.env.OPENROUTER_SITE_URL,
+      appName: process.env.OPENROUTER_APP_NAME
+    })
+  : null;
 const port = Number(process.env.PORT ?? 8787);
 const sseClients = new Set<ServerResponse>();
 
@@ -108,7 +117,14 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     }
 
     if (req.method === "GET" && pathname === "/health") {
-      sendJson(res, 200, { ok: true, protocol: "aura.v1", streaming: true, inference: true, soundscapeRegistry: true });
+      sendJson(res, 200, {
+        ok: true,
+        protocol: "aura.v1",
+        streaming: true,
+        inference: true,
+        llmInference: Boolean(openRouterAgent),
+        soundscapeRegistry: true
+      });
       return;
     }
 
@@ -145,7 +161,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
       const context = (await readJson(req)) as AmbienceContextInput;
       const result = ambienceAgent.inferSignal(context);
       const decision = aura.decide(result.signal);
-      sendJson(res, 200, { ...result, decision });
+      sendJson(res, 200, { ...result, decision, provider: "local-rules" });
       return;
     }
 
@@ -153,7 +169,39 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
       const context = (await readJson(req)) as AmbienceContextInput;
       const result = ambienceAgent.inferSignal(context);
       const update = updateAndBroadcast(result.signal);
-      sendJson(res, 200, { ...result, ...update });
+      sendJson(res, 200, { ...result, ...update, provider: "local-rules" });
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/llm-infer") {
+      if (!openRouterAgent) {
+        sendJson(res, 400, {
+          error: "openrouter_not_configured",
+          message: "Set OPENROUTER_API_KEY in .env and restart npm run server."
+        });
+        return;
+      }
+
+      const context = (await readJson(req)) as AmbienceContextInput;
+      const result = await openRouterAgent.inferSignal(context);
+      const decision = aura.decide(result.signal);
+      sendJson(res, 200, { ...result, decision, provider: "openrouter" });
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/llm-infer-update") {
+      if (!openRouterAgent) {
+        sendJson(res, 400, {
+          error: "openrouter_not_configured",
+          message: "Set OPENROUTER_API_KEY in .env and restart npm run server."
+        });
+        return;
+      }
+
+      const context = (await readJson(req)) as AmbienceContextInput;
+      const result = await openRouterAgent.inferSignal(context);
+      const update = updateAndBroadcast(result.signal);
+      sendJson(res, 200, { ...result, ...update, provider: "openrouter" });
       return;
     }
 
@@ -194,6 +242,8 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
         "GET /events",
         "POST /infer",
         "POST /infer-update",
+        "POST /llm-infer",
+        "POST /llm-infer-update",
         "POST /decide",
         "POST /update",
         "POST /reset"
@@ -218,4 +268,5 @@ setInterval(() => {
 
 server.listen(port, () => {
   console.log(`Aura Engine HTTP adapter listening on http://localhost:${port}`);
+  console.log(`OpenRouter LLM inference: ${openRouterAgent ? "enabled" : "disabled"}`);
 });
