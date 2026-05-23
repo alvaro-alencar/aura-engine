@@ -1,7 +1,9 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { createAmbienceAgent, type AmbienceContextInput } from "../../ai/src";
 import { createAuraEngine, type AmbienceDecision, type AuraSignal, type AuraState } from "../../core/src";
 
 const aura = createAuraEngine();
+const ambienceAgent = createAmbienceAgent();
 const port = Number(process.env.PORT ?? 8787);
 const sseClients = new Set<ServerResponse>();
 
@@ -68,6 +70,20 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
   return JSON.parse(raw);
 }
 
+function updateAndBroadcast(signal: AuraSignal) {
+  const decision = aura.update(signal);
+  const event: AuraUpdateEvent = {
+    protocol: "aura.v1",
+    type: "aura.update",
+    state: aura.getState(),
+    decision,
+    timestamp: Date.now()
+  };
+
+  broadcast(event);
+  return { state: aura.getState(), decision };
+}
+
 const server = createServer(async (req, res) => {
   try {
     if (req.method === "OPTIONS") {
@@ -76,7 +92,7 @@ const server = createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && req.url === "/health") {
-      sendJson(res, 200, { ok: true, protocol: "aura.v1", streaming: true });
+      sendJson(res, 200, { ok: true, protocol: "aura.v1", streaming: true, inference: true });
       return;
     }
 
@@ -90,6 +106,22 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && req.url === "/infer") {
+      const context = (await readJson(req)) as AmbienceContextInput;
+      const result = ambienceAgent.inferSignal(context);
+      const decision = aura.decide(result.signal);
+      sendJson(res, 200, { ...result, decision });
+      return;
+    }
+
+    if (req.method === "POST" && req.url === "/infer-update") {
+      const context = (await readJson(req)) as AmbienceContextInput;
+      const result = ambienceAgent.inferSignal(context);
+      const update = updateAndBroadcast(result.signal);
+      sendJson(res, 200, { ...result, ...update });
+      return;
+    }
+
     if (req.method === "POST" && req.url === "/decide") {
       const signal = (await readJson(req)) as AuraSignal;
       sendJson(res, 200, aura.decide(signal));
@@ -98,17 +130,7 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "POST" && req.url === "/update") {
       const signal = (await readJson(req)) as AuraSignal;
-      const decision = aura.update(signal);
-      const event: AuraUpdateEvent = {
-        protocol: "aura.v1",
-        type: "aura.update",
-        state: aura.getState(),
-        decision,
-        timestamp: Date.now()
-      };
-
-      broadcast(event);
-      sendJson(res, 200, { state: aura.getState(), decision });
+      sendJson(res, 200, updateAndBroadcast(signal));
       return;
     }
 
@@ -132,6 +154,8 @@ const server = createServer(async (req, res) => {
         "GET /health",
         "GET /state",
         "GET /events",
+        "POST /infer",
+        "POST /infer-update",
         "POST /decide",
         "POST /update",
         "POST /reset"
