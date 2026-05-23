@@ -10,7 +10,9 @@
     "dev": "vite examples/browser-demo --host 0.0.0.0",
     "server": "tsx packages/server/src/server.ts",
     "build": "tsc --noEmit && vite build examples/browser-demo --outDir ../../dist/browser-demo",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck",
+    "start": "node dist/server/server.js"
   },
   "keywords": [
     "ai",
@@ -19,9 +21,12 @@
     "soundscape",
     "web-audio",
     "agentic-interfaces",
-    "responsive-ui"
+    "responsive-ui",
+    "ambient-computing",
+    "ai-interface"
   ],
   "devDependencies": {
+    "@types/node": "latest",
     "@vitejs/plugin-basic-ssl": "latest",
     "tsx": "latest",
     "typescript": "latest",
