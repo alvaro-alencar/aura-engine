@@ -3,6 +3,7 @@ import type { AmbienceDecision, AuraSignal, AuraState } from "../../core/src";
 export interface AuraHttpClientOptions {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
+  eventSourceFactory?: (url: string) => EventSource;
 }
 
 export interface AuraUpdateResponse {
@@ -13,15 +14,37 @@ export interface AuraUpdateResponse {
 export interface AuraHealthResponse {
   ok: boolean;
   protocol: "aura.v1";
+  streaming?: boolean;
+}
+
+export type AuraStreamEventType = "aura.update" | "aura.reset" | "aura.heartbeat";
+
+export interface AuraStreamEvent {
+  protocol: "aura.v1";
+  type: AuraStreamEventType;
+  state?: AuraState;
+  decision?: AmbienceDecision;
+  timestamp: number;
+}
+
+export interface AuraSubscription {
+  close(): void;
+}
+
+export interface AuraSubscribeOptions {
+  onEvent(event: AuraStreamEvent): void;
+  onError?(event: Event): void;
 }
 
 export class AuraHttpClient {
   private readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
+  private readonly eventSourceFactory?: (url: string) => EventSource;
 
   constructor(options: AuraHttpClientOptions = {}) {
     this.baseUrl = (options.baseUrl ?? "http://localhost:8787").replace(/\/$/, "");
     this.fetchImpl = options.fetchImpl ?? fetch;
+    this.eventSourceFactory = options.eventSourceFactory;
   }
 
   async health(): Promise<AuraHealthResponse> {
@@ -48,6 +71,29 @@ export class AuraHttpClient {
 
   async reset(): Promise<{ ok: boolean; state: AuraState }> {
     return this.request<{ ok: boolean; state: AuraState }>("/reset", { method: "POST" });
+  }
+
+  subscribe(options: AuraSubscribeOptions): AuraSubscription {
+    const factory = this.eventSourceFactory ?? ((url: string) => new EventSource(url));
+    const source = factory(`${this.baseUrl}/events`);
+
+    const handleMessage = (event: MessageEvent<string>) => {
+      options.onEvent(JSON.parse(event.data) as AuraStreamEvent);
+    };
+
+    source.addEventListener("aura.update", handleMessage as EventListener);
+    source.addEventListener("aura.reset", handleMessage as EventListener);
+    source.addEventListener("aura.heartbeat", handleMessage as EventListener);
+
+    if (options.onError) {
+      source.addEventListener("error", options.onError);
+    }
+
+    return {
+      close() {
+        source.close();
+      }
+    };
   }
 
   private async request<T>(path: string, init: RequestInit): Promise<T> {
