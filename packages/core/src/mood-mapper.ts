@@ -1,5 +1,6 @@
 import type { AmbienceDecision, AuraState, EmotionalTone, SoundscapeId } from "./ambience-state";
 import { clamp01 } from "./ambience-state";
+import { getSoundscapePreset } from "./soundscape-registry";
 
 const TONE_TO_SOUNDSCAPE: Record<EmotionalTone, SoundscapeId> = {
   neutral: "quiet_presence",
@@ -18,11 +19,12 @@ export function mapStateToAmbience(state: AuraState): AmbienceDecision {
   const intensity = clamp01(state.intensity);
   const silenceWeight = clamp01(state.silenceDurationMs / 15000);
   const typingWeight = state.userTypingSpeed === "fast" ? 0.18 : state.userTypingSpeed === "medium" ? 0.1 : 0;
-  const volume = clamp01(0.08 + intensity * 0.24 + silenceWeight * 0.08 - typingWeight);
 
   const soundscape = TONE_TO_SOUNDSCAPE[state.emotionalTone] ?? "quiet_presence";
+  const preset = getSoundscapePreset(soundscape);
 
-  const baseFrequency = chooseBaseFrequency(state.emotionalTone, intensity);
+  const volume = clamp01(preset.defaultVolume + intensity * 0.18 + silenceWeight * 0.06 - typingWeight);
+  const baseFrequency = Number((preset.defaultBaseFrequency + intensity * 24).toFixed(2));
   const modulationRate = Number((0.04 + intensity * 0.28 + silenceWeight * 0.05).toFixed(3));
   const textureAmount = Number(clamp01(0.18 + intensity * 0.52 + silenceWeight * 0.16).toFixed(3));
   const pulseAmount = Number(clamp01(state.emotionalTone === "tense" ? 0.75 : intensity * 0.45).toFixed(3));
@@ -30,6 +32,14 @@ export function mapStateToAmbience(state: AuraState): AmbienceDecision {
   return {
     protocol: "aura.v1",
     soundscape,
+    soundscapeMeta: {
+      name: preset.name,
+      description: preset.description,
+      energy: preset.energy,
+      textures: preset.textures,
+      renderStrategy: preset.renderStrategy,
+      tags: preset.tags
+    },
     volume: Number(volume.toFixed(3)),
     baseFrequency,
     modulationRate,
@@ -38,23 +48,6 @@ export function mapStateToAmbience(state: AuraState): AmbienceDecision {
     transitionMs: state.silenceDurationMs > 7000 ? 4200 : 1800,
     explanation: explainDecision(state, soundscape)
   };
-}
-
-function chooseBaseFrequency(tone: EmotionalTone, intensity: number): number {
-  const base = {
-    neutral: 174,
-    lonely_reflective: 110,
-    focused: 220,
-    curious: 294,
-    excited: 330,
-    tense: 146,
-    sad: 123,
-    calm: 196,
-    playful: 392,
-    mystical: 136.1
-  } satisfies Record<EmotionalTone, number>;
-
-  return Number((base[tone] + intensity * 24).toFixed(2));
 }
 
 function explainDecision(state: AuraState, soundscape: SoundscapeId): string {
