@@ -8,8 +8,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite examples/browser-demo --host 0.0.0.0",
+    "dev:live": "vite examples/aura-live-demo --host 0.0.0.0",
     "server": "tsx packages/server/src/server.ts",
-    "build": "tsc --noEmit && vite build examples/browser-demo --outDir ../../dist/browser-demo",
+    "build": "tsc --noEmit && vite build examples/browser-demo --outDir ../../dist/browser-demo && vite build examples/aura-live-demo --outDir ../../dist/aura-live-demo",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck",
     "start": "node dist/server/server.js"
