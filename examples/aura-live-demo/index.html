@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,15 +18,12 @@
         --accent: #a7b7ff;
         --accent-strong: #d8deff;
         --aqua: #89e7ff;
-        --warm: #e8c991;
         --danger: #ff9e9e;
         background: var(--bg);
         color: var(--text);
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
@@ -47,375 +44,70 @@
         mask-image: radial-gradient(circle at center, black, transparent 78%);
       }
 
-      main {
-        width: min(1180px, calc(100vw - 28px));
-        margin: 0 auto;
-        padding: 30px 0 42px;
-      }
+      main { width: min(1180px, calc(100vw - 28px)); margin: 0 auto; padding: 30px 0 42px; }
 
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 16px;
-      }
-
-      .brand {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-
+      .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+      .brand { display: flex; gap: 12px; align-items: center; }
       .mark {
-        width: 42px;
-        height: 42px;
-        border-radius: 16px;
-        background:
-          radial-gradient(circle at 40% 35%, white, transparent 12%),
-          radial-gradient(circle at 50% 50%, rgba(167, 183, 255, 0.85), rgba(137, 231, 255, 0.22));
+        width: 42px; height: 42px; border-radius: 16px;
+        background: radial-gradient(circle at 40% 35%, white, transparent 12%), radial-gradient(circle at 50% 50%, rgba(167, 183, 255, 0.85), rgba(137, 231, 255, 0.22));
         border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow: 0 0 42px rgba(167, 183, 255, 0.28);
       }
+      .brand strong { display: block; letter-spacing: -0.04em; }
+      .brand span, .byline { color: var(--muted); font-size: 0.92rem; }
 
-      .brand strong {
-        display: block;
-        letter-spacing: -0.04em;
-      }
+      .hero { display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 18px; align-items: start; }
+      @media (max-width: 940px) { .hero { grid-template-columns: 1fr; } .topbar { align-items: flex-start; flex-direction: column; } }
 
-      .brand span, .byline {
-        color: var(--muted);
-        font-size: 0.92rem;
-      }
+      .panel { border: 1px solid var(--border); border-radius: 28px; background: var(--panel); box-shadow: 0 28px 90px rgba(0, 0, 0, 0.36); backdrop-filter: blur(18px); }
+      .intro { padding: 28px; }
+      .badge { display: inline-flex; gap: 8px; align-items: center; border: 1px solid rgba(167, 183, 255, 0.22); border-radius: 999px; padding: 8px 12px; color: var(--muted-strong); background: rgba(167, 183, 255, 0.07); font-size: 0.88rem; }
+      h1 { margin: 18px 0 10px; max-width: 780px; font-size: clamp(2.7rem, 6.6vw, 6rem); line-height: 0.92; letter-spacing: -0.08em; }
+      h2 { margin: 0 0 12px; font-size: 1.05rem; letter-spacing: -0.02em; }
+      p { color: var(--muted); line-height: 1.65; }
+      .lead { max-width: 760px; color: var(--muted-strong); font-size: 1.05rem; }
 
-      .hero {
-        display: grid;
-        grid-template-columns: 1.12fr 0.88fr;
-        gap: 18px;
-        align-items: start;
-      }
+      .guide { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0 18px; }
+      @media (max-width: 760px) { .guide { grid-template-columns: 1fr; } }
+      .step { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 13px; background: rgba(255, 255, 255, 0.045); }
+      .step b { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-right: 7px; border-radius: 999px; background: rgba(167, 183, 255, 0.16); color: var(--accent-strong); }
+      .step span { color: var(--muted); display: block; margin-top: 7px; line-height: 1.45; font-size: 0.92rem; }
 
-      @media (max-width: 940px) {
-        .hero {
-          grid-template-columns: 1fr;
-        }
+      .composer { margin-top: 18px; display: grid; gap: 14px; }
+      textarea, select, input { width: 100%; border: 1px solid rgba(183, 197, 255, 0.15); border-radius: 18px; background: rgba(5, 8, 15, 0.52); color: var(--text); font: inherit; outline: none; }
+      textarea:focus, select:focus, input:focus { border-color: rgba(137, 231, 255, 0.46); box-shadow: 0 0 0 4px rgba(137, 231, 255, 0.08); }
+      textarea { min-height: 150px; resize: vertical; padding: 16px; line-height: 1.55; }
+      select { padding: 12px 14px; }
+      input[type="range"] { accent-color: var(--accent); }
+      .field-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted-strong); font-size: 0.95rem; }
+      .hint { color: rgba(245, 247, 255, 0.52); font-size: 0.84rem; }
+      .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      @media (max-width: 900px) { .controls { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 600px) { .controls { grid-template-columns: 1fr; } }
+      label { display: grid; gap: 8px; color: var(--muted); font-size: 0.92rem; }
+      .buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+      button { border: 0; border-radius: 16px; padding: 13px 16px; color: #0b0f1a; font: inherit; font-weight: 850; cursor: pointer; background: linear-gradient(135deg, var(--accent-strong), var(--aqua)); }
+      button.secondary { color: var(--text); background: rgba(255, 255, 255, 0.075); border: 1px solid rgba(255, 255, 255, 0.13); }
+      button.danger { color: var(--text); background: rgba(255, 158, 158, 0.12); border: 1px solid rgba(255, 158, 158, 0.22); }
 
-        .topbar {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-      }
-
-      .panel {
-        border: 1px solid var(--border);
-        border-radius: 28px;
-        background: var(--panel);
-        box-shadow: 0 28px 90px rgba(0, 0, 0, 0.36);
-        backdrop-filter: blur(18px);
-      }
-
-      .intro {
-        padding: 28px;
-      }
-
-      .badge {
-        display: inline-flex;
-        gap: 8px;
-        align-items: center;
-        border: 1px solid rgba(167, 183, 255, 0.22);
-        border-radius: 999px;
-        padding: 8px 12px;
-        color: var(--muted-strong);
-        background: rgba(167, 183, 255, 0.07);
-        font-size: 0.88rem;
-      }
-
-      h1 {
-        margin: 18px 0 10px;
-        max-width: 780px;
-        font-size: clamp(2.7rem, 6.6vw, 6rem);
-        line-height: 0.92;
-        letter-spacing: -0.08em;
-      }
-
-      h2 {
-        margin: 0 0 12px;
-        font-size: 1.05rem;
-        letter-spacing: -0.02em;
-      }
-
-      p {
-        color: var(--muted);
-        line-height: 1.65;
-      }
-
-      .lead {
-        max-width: 760px;
-        color: var(--muted-strong);
-        font-size: 1.05rem;
-      }
-
-      .guide {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin: 20px 0 18px;
-      }
-
-      @media (max-width: 760px) {
-        .guide {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .step {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 18px;
-        padding: 13px;
-        background: rgba(255, 255, 255, 0.045);
-      }
-
-      .step b {
-        display: inline-grid;
-        place-items: center;
-        width: 24px;
-        height: 24px;
-        margin-right: 7px;
-        border-radius: 999px;
-        background: rgba(167, 183, 255, 0.16);
-        color: var(--accent-strong);
-      }
-
-      .step span {
-        color: var(--muted);
-        display: block;
-        margin-top: 7px;
-        line-height: 1.45;
-        font-size: 0.92rem;
-      }
-
-      .composer {
-        margin-top: 18px;
-        display: grid;
-        gap: 14px;
-      }
-
-      textarea, select, input {
-        width: 100%;
-        border: 1px solid rgba(183, 197, 255, 0.15);
-        border-radius: 18px;
-        background: rgba(5, 8, 15, 0.52);
-        color: var(--text);
-        font: inherit;
-        outline: none;
-      }
-
-      textarea:focus, select:focus, input:focus {
-        border-color: rgba(137, 231, 255, 0.46);
-        box-shadow: 0 0 0 4px rgba(137, 231, 255, 0.08);
-      }
-
-      textarea {
-        min-height: 150px;
-        resize: vertical;
-        padding: 16px;
-        line-height: 1.55;
-      }
-
-      select {
-        padding: 12px 14px;
-      }
-
-      input[type="range"] {
-        accent-color: var(--accent);
-      }
-
-      .field-title {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        color: var(--muted-strong);
-        font-size: 0.95rem;
-      }
-
-      .hint {
-        color: rgba(245, 247, 255, 0.52);
-        font-size: 0.84rem;
-      }
-
-      .controls {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-      }
-
-      @media (max-width: 720px) {
-        .controls {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      label {
-        display: grid;
-        gap: 8px;
-        color: var(--muted);
-        font-size: 0.92rem;
-      }
-
-      .buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      button {
-        border: 0;
-        border-radius: 16px;
-        padding: 13px 16px;
-        color: #0b0f1a;
-        font: inherit;
-        font-weight: 850;
-        cursor: pointer;
-        background: linear-gradient(135deg, var(--accent-strong), var(--aqua));
-      }
-
-      button.secondary {
-        color: var(--text);
-        background: rgba(255, 255, 255, 0.075);
-        border: 1px solid rgba(255, 255, 255, 0.13);
-      }
-
-      button.danger {
-        color: var(--text);
-        background: rgba(255, 158, 158, 0.12);
-        border: 1px solid rgba(255, 158, 158, 0.22);
-      }
-
-      .status {
-        padding: 20px;
-        display: grid;
-        gap: 14px;
-        position: sticky;
-        top: 18px;
-      }
-
-      @media (max-width: 940px) {
-        .status {
-          position: static;
-        }
-      }
-
-      .orb {
-        min-height: 245px;
-        border-radius: 26px;
-        display: grid;
-        place-items: center;
-        background:
-          radial-gradient(circle at 50% 44%, rgba(255, 255, 255, 0.24), transparent 0.5rem),
-          radial-gradient(circle at 50% 50%, rgba(167, 183, 255, 0.42), transparent 5.4rem),
-          radial-gradient(circle at 44% 54%, rgba(137, 231, 255, 0.16), transparent 10rem),
-          rgba(255, 255, 255, 0.04);
-        overflow: hidden;
-        position: relative;
-      }
-
-      .orb::after {
-        content: "";
-        position: absolute;
-        width: 172px;
-        height: 172px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        box-shadow: 0 0 80px rgba(167, 183, 255, 0.38);
-        animation: breathe 5.2s ease-in-out infinite;
-      }
-
-      @keyframes breathe {
-        0%, 100% { transform: scale(0.9); opacity: 0.62; }
-        50% { transform: scale(1.16); opacity: 1; }
-      }
-
-      .soundscape {
-        text-align: center;
-        z-index: 1;
-        padding: 20px;
-      }
-
-      .soundscape strong {
-        display: block;
-        margin-bottom: 8px;
-        font-size: clamp(1.45rem, 3.2vw, 2.35rem);
-        letter-spacing: -0.055em;
-      }
-
-      .soundscape span {
-        color: var(--muted);
-        line-height: 1.45;
-      }
-
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-      }
-
-      .card {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 18px;
-        padding: 13px;
-        background: var(--panel-soft);
-      }
-
-      .card small {
-        display: block;
-        color: rgba(245, 247, 255, 0.52);
-        margin-bottom: 4px;
-      }
-
-      .card strong {
-        overflow-wrap: anywhere;
-      }
-
-      .explain {
-        border: 1px solid rgba(137, 231, 255, 0.14);
-        border-radius: 20px;
-        padding: 14px;
-        background: rgba(137, 231, 255, 0.055);
-      }
-
-      .explain ul {
-        margin: 10px 0 0;
-        padding-left: 18px;
-        color: var(--muted);
-        line-height: 1.55;
-      }
-
-      details {
-        margin-top: 18px;
-        border: 1px solid rgba(255, 255, 255, 0.11);
-        border-radius: 22px;
-        background: rgba(0, 0, 0, 0.22);
-        overflow: hidden;
-      }
-
-      summary {
-        cursor: pointer;
-        padding: 16px 18px;
-        color: var(--muted-strong);
-        font-weight: 750;
-      }
-
-      pre {
-        margin: 0;
-        min-height: 240px;
-        white-space: pre-wrap;
-        overflow: auto;
-        padding: 18px;
-        color: rgba(245, 247, 255, 0.78);
-        background: rgba(0, 0, 0, 0.26);
-        border-top: 1px solid rgba(255, 255, 255, 0.09);
-      }
+      .status { padding: 20px; display: grid; gap: 14px; position: sticky; top: 18px; }
+      @media (max-width: 940px) { .status { position: static; } }
+      .orb { min-height: 245px; border-radius: 26px; display: grid; place-items: center; background: radial-gradient(circle at 50% 44%, rgba(255,255,255,0.24), transparent 0.5rem), radial-gradient(circle at 50% 50%, rgba(167,183,255,0.42), transparent 5.4rem), radial-gradient(circle at 44% 54%, rgba(137,231,255,0.16), transparent 10rem), rgba(255,255,255,0.04); overflow: hidden; position: relative; }
+      .orb::after { content: ""; position: absolute; width: 172px; height: 172px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 0 80px rgba(167,183,255,0.38); animation: breathe 5.2s ease-in-out infinite; }
+      @keyframes breathe { 0%, 100% { transform: scale(0.9); opacity: 0.62; } 50% { transform: scale(1.16); opacity: 1; } }
+      .soundscape { text-align: center; z-index: 1; padding: 20px; }
+      .soundscape strong { display: block; margin-bottom: 8px; font-size: clamp(1.45rem, 3.2vw, 2.35rem); letter-spacing: -0.055em; }
+      .soundscape span { color: var(--muted); line-height: 1.45; }
+      .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .card { border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 13px; background: var(--panel-soft); }
+      .card small { display: block; color: rgba(245,247,255,0.52); margin-bottom: 4px; }
+      .card strong { overflow-wrap: anywhere; }
+      .explain { border: 1px solid rgba(137,231,255,0.14); border-radius: 20px; padding: 14px; background: rgba(137,231,255,0.055); }
+      .explain ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); line-height: 1.55; }
+      details { margin-top: 18px; border: 1px solid rgba(255,255,255,0.11); border-radius: 22px; background: rgba(0,0,0,0.22); overflow: hidden; }
+      summary { cursor: pointer; padding: 16px 18px; color: var(--muted-strong); font-weight: 750; }
+      pre { margin: 0; min-height: 240px; white-space: pre-wrap; overflow: auto; padding: 18px; color: rgba(245,247,255,0.78); background: rgba(0,0,0,0.26); border-top: 1px solid rgba(255,255,255,0.09); }
     </style>
   </head>
   <body>
@@ -425,69 +117,77 @@
           <div class="mark" aria-hidden="true"></div>
           <div>
             <strong>Aura Engine</strong>
-            <span>Responsive ambience for AI interfaces</span>
+            <span>Ambiência responsiva para interfaces com IA</span>
           </div>
         </div>
-        <div class="byline">Original concept by Álvaro Alencar</div>
+        <div class="byline">Conceito original de Álvaro Alencar</div>
       </header>
 
       <section class="hero">
         <div class="panel intro">
-          <span class="badge">Live demo · no server required</span>
-          <h1>Teach the interface to breathe.</h1>
+          <span class="badge">Demo ao vivo · modo local ou OpenRouter</span>
+          <h1>Ensine a interface a respirar.</h1>
           <p class="lead">
-            This demo shows the full Aura loop: write a situation, let Aura infer the ambience, then hear the browser render a subtle sound field.
+            Escreva uma situação de conversa. O Aura identifica o clima emocional/cognitivo, escolhe uma paisagem sonora e o navegador renderiza uma ambiência sutil.
           </p>
 
-          <div class="guide" aria-label="How to use Aura Live Demo">
-            <div class="step"><b>1</b>Start audio<span>Click once so the browser is allowed to play sound.</span></div>
-            <div class="step"><b>2</b>Describe the moment<span>Write what the user is feeling, doing or trying to understand.</span></div>
-            <div class="step"><b>3</b>Infer & listen<span>Aura chooses tone, soundscape, intensity and render strategy.</span></div>
+          <div class="guide" aria-label="Como usar a Aura Live Demo">
+            <div class="step"><b>1</b>Inicie o áudio<span>Clique uma vez para o navegador liberar som.</span></div>
+            <div class="step"><b>2</b>Descreva o momento<span>Conte o que o usuário sente, faz ou tenta entender.</span></div>
+            <div class="step"><b>3</b>Inferir e ouvir<span>O Aura escolhe tom, paisagem, intensidade e estratégia sonora.</span></div>
           </div>
 
           <div class="composer">
             <label>
               <div class="field-title">
-                <span>Conversation context</span>
-                <span class="hint">Try emotional, coding, study or creative situations</span>
+                <span>Contexto da conversa</span>
+                <span class="hint">Teste situações emocionais, estudo, código ou criação</span>
               </div>
-              <textarea id="context">I am writing to an AI with headphones on. The room is silent. I want to feel that something intelligent is present here with me.</textarea>
+              <textarea id="context">Estou escrevendo para uma IA com fone no ouvido. O ambiente está silencioso. Quero sentir que existe algo inteligente presente aqui comigo.</textarea>
             </label>
 
             <div class="controls">
               <label>
-                Silence duration
+                Motor de inferência
+                <select id="engine">
+                  <option value="local" selected>Regras locais</option>
+                  <option value="openrouter">LLM OpenRouter</option>
+                </select>
+              </label>
+
+              <label>
+                Tempo de silêncio
                 <input id="silence" type="range" min="0" max="20000" step="500" value="9000" />
                 <span id="silenceLabel">9000ms</span>
               </label>
 
               <label>
-                Typing speed
+                Velocidade de digitação
                 <select id="typingSpeed">
-                  <option value="idle">idle</option>
-                  <option value="slow" selected>slow</option>
-                  <option value="medium">medium</option>
-                  <option value="fast">fast</option>
+                  <option value="idle">parado</option>
+                  <option value="slow" selected>lenta</option>
+                  <option value="medium">média</option>
+                  <option value="fast">rápida</option>
                 </select>
               </label>
 
               <label>
-                Interaction mode
+                Modo de interação
                 <select id="mode">
-                  <option value="text_conversation" selected>text conversation</option>
-                  <option value="coding_session">coding session</option>
-                  <option value="study_session">study session</option>
-                  <option value="creative_session">creative session</option>
-                  <option value="meditation">meditation</option>
+                  <option value="text_conversation" selected>conversa por texto</option>
+                  <option value="coding_session">sessão de código</option>
+                  <option value="study_session">sessão de estudo</option>
+                  <option value="creative_session">sessão criativa</option>
+                  <option value="meditation">meditação</option>
                 </select>
               </label>
             </div>
 
             <div class="buttons">
-              <button id="start">Start Aura Audio</button>
-              <button id="infer">Infer & Apply</button>
-              <button id="cycle" class="secondary">Try guided examples</button>
-              <button id="stop" class="danger">Stop audio</button>
+              <button id="start">Iniciar áudio Aura</button>
+              <button id="infer">Inferir e aplicar</button>
+              <button id="cycle" class="secondary">Testar exemplos guiados</button>
+              <button id="stop" class="danger">Parar áudio</button>
             </div>
           </div>
         </div>
@@ -495,44 +195,32 @@
         <aside class="panel status">
           <div class="orb">
             <div class="soundscape">
-              <strong id="soundscapeName">Waiting for signal</strong>
-              <span id="soundscapeDescription">Start audio, then infer ambience.</span>
+              <strong id="soundscapeName">Aguardando sinal</strong>
+              <span id="soundscapeDescription">Inicie o áudio e mande inferir a ambiência.</span>
             </div>
           </div>
 
           <div class="cards">
-            <div class="card">
-              <small>Tone detected</small>
-              <strong id="tone">—</strong>
-            </div>
-            <div class="card">
-              <small>Render strategy</small>
-              <strong id="strategy">—</strong>
-            </div>
-            <div class="card">
-              <small>Intensity</small>
-              <strong id="intensity">—</strong>
-            </div>
-            <div class="card">
-              <small>Confidence</small>
-              <strong id="confidence">—</strong>
-            </div>
+            <div class="card"><small>Tom detectado</small><strong id="tone">—</strong></div>
+            <div class="card"><small>Estratégia sonora</small><strong id="strategy">—</strong></div>
+            <div class="card"><small>Intensidade</small><strong id="intensity">—</strong></div>
+            <div class="card"><small>Confiança</small><strong id="confidence">—</strong></div>
           </div>
 
           <div class="explain">
-            <h2>What am I seeing?</h2>
+            <h2>O que estou vendo?</h2>
             <ul>
-              <li><strong>Tone</strong> is the emotional/cognitive state inferred from context.</li>
-              <li><strong>Strategy</strong> tells the renderer how to sound: drone, particles or pulse.</li>
-              <li><strong>Intensity</strong> controls energy, texture and modulation.</li>
-              <li><strong>Confidence</strong> is how strongly the agent recognized the pattern.</li>
+              <li><strong>Tom</strong> é o estado emocional/cognitivo inferido.</li>
+              <li><strong>Estratégia</strong> diz como o som será renderizado: drone, partículas ou pulso.</li>
+              <li><strong>Intensidade</strong> controla energia, textura e modulação.</li>
+              <li><strong>Confiança</strong> indica a segurança da classificação.</li>
             </ul>
           </div>
         </aside>
       </section>
 
       <details>
-        <summary>Developer output: AuraSignal, state and AmbienceDecision</summary>
+        <summary>Saída técnica: AuraSignal, estado e AmbienceDecision</summary>
         <pre id="output"></pre>
       </details>
     </main>
