@@ -24,7 +24,15 @@ function render() {
   });
 
   audio.apply(decision);
-  output.textContent = JSON.stringify(decision, null, 2);
+  output.textContent = JSON.stringify(
+    {
+      activeStrategy: decision.soundscapeMeta?.renderStrategy,
+      activeTextures: decision.soundscapeMeta?.textures,
+      decision
+    },
+    null,
+    2
+  );
 }
 
 start?.addEventListener("click", async () => {
