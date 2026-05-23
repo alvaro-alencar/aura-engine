@@ -1,0 +1,9 @@
+services:
+  aura-engine:
+    build: .
+    container_name: aura-engine
+    ports:
+      - "8787:8787"
+    environment:
+      - PORT=8787
+    restart: unless-stopped
