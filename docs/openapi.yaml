@@ -30,6 +30,8 @@ paths:
                     type: boolean
                   inference:
                     type: boolean
+                  soundscapeRegistry:
+                    type: boolean
   /state:
     get:
       summary: Get current Aura state
@@ -40,6 +42,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuraState'
+  /soundscapes:
+    get:
+      summary: List soundscape presets
+      parameters:
+        - in: query
+          name: tag
+          required: false
+          schema:
+            type: string
+          description: Optional tag filter, such as focus, coding, calm or mystical.
+      responses:
+        '200':
+          description: Soundscape presets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SoundscapePreset'
+  /soundscapes/{id}:
+    get:
+      summary: Get one soundscape preset
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/SoundscapeId'
+      responses:
+        '200':
+          description: Soundscape preset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoundscapePreset'
+        '404':
+          description: Soundscape not found
   /events:
     get:
       summary: Subscribe to ambience stream through Server-Sent Events
@@ -242,6 +281,8 @@ components:
           const: aura.v1
         soundscape:
           $ref: '#/components/schemas/SoundscapeId'
+        soundscapeMeta:
+          $ref: '#/components/schemas/AmbienceDecisionSoundscapeMetadata'
         volume:
           type: number
           minimum: 0
@@ -258,6 +299,59 @@ components:
           type: number
         explanation:
           type: string
+    AmbienceDecisionSoundscapeMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        energy:
+          $ref: '#/components/schemas/SoundscapeEnergy'
+        textures:
+          type: array
+          items:
+            $ref: '#/components/schemas/SoundscapeTexture'
+        renderStrategy:
+          $ref: '#/components/schemas/SoundscapeRenderStrategy'
+        tags:
+          type: array
+          items:
+            type: string
+    SoundscapePreset:
+      type: object
+      required: [id, name, description, energy, textures, renderStrategy, defaultBaseFrequency, defaultVolume, tags, recommendedFor, avoidWhen]
+      properties:
+        id:
+          $ref: '#/components/schemas/SoundscapeId'
+        name:
+          type: string
+        description:
+          type: string
+        energy:
+          $ref: '#/components/schemas/SoundscapeEnergy'
+        textures:
+          type: array
+          items:
+            $ref: '#/components/schemas/SoundscapeTexture'
+        renderStrategy:
+          $ref: '#/components/schemas/SoundscapeRenderStrategy'
+        defaultBaseFrequency:
+          type: number
+        defaultVolume:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+        recommendedFor:
+          type: array
+          items:
+            type: string
+        avoidWhen:
+          type: array
+          items:
+            type: string
     AuraStreamEvent:
       type: object
       required: [protocol, type, timestamp]
@@ -286,3 +380,12 @@ components:
     SoundscapeId:
       type: string
       enum: [quiet_presence, deep_room_low_warm_drone, soft_focus_current, curiosity_particles, creative_sparks, tension_shadow_pulse, calm_breathing_field, mystic_resonator, playful_glass_motes]
+    SoundscapeEnergy:
+      type: string
+      enum: [very_low, low, medium, high]
+    SoundscapeTexture:
+      type: string
+      enum: [clean, warm, grainy, glassy, dark, airy, pulsed]
+    SoundscapeRenderStrategy:
+      type: string
+      enum: [procedural_drone, procedural_particles, procedural_pulse, sample_loop, external_renderer]
