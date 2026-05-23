@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/node": "latest",
     "@vitejs/plugin-basic-ssl": "latest",
+    "dotenv": "latest",
     "tsx": "latest",
     "typescript": "latest",
     "vite": "latest"
