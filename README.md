@@ -43,7 +43,7 @@ The first version does not try to generate complex music from scratch. It starts
 3. render a lightweight procedural soundscape in the browser;
 4. expose a clean API that can later be connected to a dedicated ambience AI.
 
-## Use it in three ways
+## Use it in four ways
 
 ### 1. Browser demo
 
@@ -95,6 +95,37 @@ The service will be available at:
 http://localhost:8787
 ```
 
+### 4. Live ambience stream
+
+Aura Engine can stream ambience updates through Server-Sent Events:
+
+```txt
+GET http://localhost:8787/events
+```
+
+Browser example:
+
+```ts
+const events = new EventSource("http://localhost:8787/events");
+
+events.addEventListener("aura.update", (event) => {
+  const payload = JSON.parse(event.data);
+  console.log(payload.decision);
+});
+```
+
+SDK example:
+
+```ts
+const subscription = aura.subscribe({
+  onEvent(event) {
+    if (event.decision) {
+      console.log("Apply ambience", event.decision);
+    }
+  }
+});
+```
+
 ## Basic library usage
 
 ```ts
@@ -133,12 +164,13 @@ console.log(decision);
 
 ## Protocol
 
-Aura Engine speaks JSON over HTTP.
+Aura Engine speaks JSON over HTTP and SSE.
 
 See:
 
 - `docs/protocol.md`
 - `docs/openapi.yaml`
+- `docs/streaming.md`
 - `docs/integration-guide.md`
 - `docs/sidecar.md`
 
@@ -151,6 +183,7 @@ aura-engine/
     architecture.md
     protocol.md
     openapi.yaml
+    streaming.md
     integration-guide.md
     sidecar.md
   packages/
@@ -176,6 +209,8 @@ aura-engine/
       src/main.ts
     http-client/
       README.md
+    streaming-client/
+      index.html
 ```
 
 ## Design laws
@@ -194,7 +229,7 @@ Aura should behave like the weather of an intelligent room.
 
 Experimental seed version.
 
-This is the first skeleton: a working symbolic and procedural foundation for responsive ambience. The next step is connecting an actual LLM-based ambience agent, adding WebSocket streaming and expanding the sound palette.
+This is the first skeleton: a working symbolic and procedural foundation for responsive ambience. The next step is connecting an actual LLM-based ambience agent, adding richer renderers and expanding the sound palette.
 
 ## Citation
 
