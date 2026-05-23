@@ -28,6 +28,8 @@ paths:
                     const: aura.v1
                   streaming:
                     type: boolean
+                  inference:
+                    type: boolean
   /state:
     get:
       summary: Get current Aura state
@@ -52,6 +54,45 @@ paths:
                 example: |
                   event: aura.update
                   data: {"protocol":"aura.v1","type":"aura.update","timestamp":1770000000000}
+  /infer:
+    post:
+      summary: Infer symbolic ambience signal from interaction context
+      description: Converts context into an AuraSignal and returns a decision without mutating state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmbienceContextInput'
+      responses:
+        '200':
+          description: Inferred signal and ambience decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmbienceInferenceResponse'
+  /infer-update:
+    post:
+      summary: Infer symbolic ambience signal, update state and broadcast
+      description: Converts context into an AuraSignal, updates server state and emits aura.update over SSE.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmbienceContextInput'
+      responses:
+        '200':
+          description: Inferred signal, updated state and decision
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AmbienceInferenceResponse'
+                  - type: object
+                    properties:
+                      state:
+                        $ref: '#/components/schemas/AuraState'
   /decide:
     post:
       summary: Decide ambience without mutating current state
@@ -107,6 +148,43 @@ paths:
                     $ref: '#/components/schemas/AuraState'
 components:
   schemas:
+    AmbienceContextInput:
+      type: object
+      properties:
+        text:
+          type: string
+        mode:
+          $ref: '#/components/schemas/ConversationMode'
+        topic:
+          type: string
+        userIsTyping:
+          type: boolean
+        userTypingSpeed:
+          $ref: '#/components/schemas/TypingSpeed'
+        silenceDurationMs:
+          type: number
+          minimum: 0
+        agentName:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+    AmbienceInferenceResponse:
+      type: object
+      required: [signal, confidence, reasons, decision]
+      properties:
+        signal:
+          $ref: '#/components/schemas/AuraSignal'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        reasons:
+          type: array
+          items:
+            type: string
+        decision:
+          $ref: '#/components/schemas/AmbienceDecision'
     AuraSignal:
       type: object
       properties:
