@@ -17,12 +17,12 @@ const cycleButton = document.querySelector<HTMLButtonElement>("#cycle");
 const stopButton = document.querySelector<HTMLButtonElement>("#stop");
 const output = document.querySelector<HTMLPreElement>("#output");
 
-const soundscapeName = document.querySelector<HTMLStrongElement>("#soundscapeName");
+const soundscapeName = document.querySelector<HTMLElement>("#soundscapeName");
 const soundscapeDescription = document.querySelector<HTMLSpanElement>("#soundscapeDescription");
-const tone = document.querySelector<HTMLStrongElement>("#tone");
-const strategy = document.querySelector<HTMLStrongElement>("#strategy");
-const intensity = document.querySelector<HTMLStrongElement>("#intensity");
-const confidence = document.querySelector<HTMLStrongElement>("#confidence");
+const tone = document.querySelector<HTMLElement>("#tone");
+const strategy = document.querySelector<HTMLElement>("#strategy");
+const intensity = document.querySelector<HTMLElement>("#intensity");
+const confidence = document.querySelector<HTMLElement>("#confidence");
 
 let audioStarted = false;
 let sampleIndex = 0;
